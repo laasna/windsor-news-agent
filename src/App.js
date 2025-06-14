@@ -34,6 +34,7 @@ function App() {
         alert('Error fetching news');
       }
     } catch (error) {
+      console.error('Fetch error:', error);  // <-- Added this line for debugging
       alert('Failed to fetch news');
     }
   };
