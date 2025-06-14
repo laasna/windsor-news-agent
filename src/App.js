@@ -7,16 +7,26 @@ function App() {
   const [news, setNews] = useState([]);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
 
   const fetchNews = async () => {
     if (!category) {
       alert('Please select a news category');
       return;
     }
+
     try {
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=us&category=${category}&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`
-      );
+      let url = '';
+
+      if (selectedDate) {
+        // Use "everything" endpoint with date
+        url = `https://newsapi.org/v2/everything?q=${category}&from=${selectedDate}&to=${selectedDate}&sortBy=publishedAt&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
+      } else {
+        // Use "top-headlines" endpoint without date
+        url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
+      }
+
+      const response = await fetch(url);
       const data = await response.json();
       if (data.status === 'ok') {
         setNews(data.articles);
@@ -34,8 +44,6 @@ function App() {
       return;
     }
     try {
-      // For now, just simulate successful subscription
-      // We will connect this to backend next
       setSubscribed(true);
       alert('Subscribed successfully! You will receive daily updates.');
     } catch (error) {
@@ -57,6 +65,7 @@ function App() {
     <div style={appStyle}>
       <div className="App">
         <h1>Latest News</h1>
+
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">Select news category</option>
           <option value="business">Business</option>
@@ -68,6 +77,15 @@ function App() {
           <option value="technology">Technology</option>
           <option value="politics">Politics</option>
         </select>
+
+        {/* ✅ Optional Date Picker (Not mandatory) */}
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="date-picker"
+        />
+
         <button className="blue-button" onClick={fetchNews}>Get News</button>
 
         <div className="news-list">
