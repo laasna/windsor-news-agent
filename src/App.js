@@ -16,26 +16,33 @@ function App() {
     }
 
     try {
-      let url = '';
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+      let apiUrl = '';
 
       if (selectedDate) {
-        // Use "everything" endpoint with date
-        url = `https://newsapi.org/v2/everything?q=${category}&from=${selectedDate}&to=${selectedDate}&sortBy=publishedAt&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
+        apiUrl = `https://newsapi.org/v2/everything?q=${category}&from=${selectedDate}&to=${selectedDate}&sortBy=publishedAt&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
       } else {
-        // Use "top-headlines" endpoint without date
-        url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
+        apiUrl = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&pageSize=5&apiKey=7c565d743ee841f495718d23861214ac`;
       }
 
-      const response = await fetch(url);
+      const isLocalhost =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+      const fetchUrl = isLocalhost ? proxyUrl + apiUrl : apiUrl;
+
+      const response = await fetch(fetchUrl);
       const data = await response.json();
+
       if (data.status === 'ok') {
         setNews(data.articles);
       } else {
-        alert('Error fetching news');
+        alert('Error fetching news: ' + (data.message || 'Unknown error'));
+        console.error('NewsAPI error:', data);
       }
     } catch (error) {
-      console.error('Fetch error:', error);  // <-- Added this line for debugging
       alert('Failed to fetch news');
+      console.error('Fetch error:', error);
     }
   };
 
@@ -79,7 +86,6 @@ function App() {
           <option value="politics">Politics</option>
         </select>
 
-        {/* ✅ Optional Date Picker (Not mandatory) */}
         <input
           type="date"
           value={selectedDate}
@@ -87,7 +93,9 @@ function App() {
           className="date-picker"
         />
 
-        <button className="blue-button" onClick={fetchNews}>Get News</button>
+        <button className="blue-button" onClick={fetchNews}>
+          Get News
+        </button>
 
         <div className="news-list">
           {news.length > 0 ? (
@@ -113,7 +121,6 @@ function App() {
           )}
         </div>
 
-        {/* Subscription Form */}
         {!subscribed ? (
           <div className="subscription-form">
             <h3>Subscribe for daily news updates</h3>
